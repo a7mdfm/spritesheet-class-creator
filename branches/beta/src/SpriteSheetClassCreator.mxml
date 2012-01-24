@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   width="1200" height="650" xmlns:views="br.com.halfjust.sscc.views.*" currentState="movieclip"
+					   showStatusBar="false" minHeight="300" minWidth="800" color="#666666" fontFamily="_sans" frameRate="30">
+	
+	<s:layout>
+		<s:VerticalLayout gap="10" horizontalAlign="justify" paddingBottom="10" paddingLeft="10"
+						  paddingRight="10" paddingTop="10" verticalAlign="top"/>
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			import br.com.halfjust.sscc.model.vo.Asset;
+			
+			import spark.events.IndexChangeEvent;
+			
+			[Bindable]
+			private var selectedAsset:Asset;
+			
+			protected function changeType(event:Event):void
+			{
+				if(config.type == ConfigurationView.MOVIECLIP){
+					currentState = "movieclip";
+				}else{
+					currentState = "bitmap";
+				}
+			}
+			
+			protected function captureSpritesheet(event:Event):void
+			{
+				if(bmview){
+					bmview.capture();
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="movieclip" />
+		<s:State name="bitmap" />
+	</s:states>
+
+	
+	<views:OptionView height="30" />
+	
+	<s:HGroup height="100%" gap="10" verticalAlign="justify">
+		<views:ConfigurationView width="200" id="config" change="changeType(event)" capture="captureSpritesheet(event)" />
+		<views:MovieClipView includeIn="movieclip" id="mcview" width="100%" asset="{itens.currentAsset}" />
+		<views:BitmapView includeIn="bitmap" id="bmview" width="100%" asset="{itens.currentAsset}"/>
+		<views:ItensView id="itens" width="200"/>
+	</s:HGroup>
+	
+	<s:Label color="#646464" fontFamily="_sans" fontSize="10"
+			 text="Copyright 2012 (c) Christiano Grillo Justus, ODI Company"/>
+</s:WindowedApplication>
