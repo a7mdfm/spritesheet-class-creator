@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx">
+	
+	<fx:Metadata>
+		
+		[Event(name="change", type="flash.events.Event")]
+		[Event(name="capture", type="flash.events.Event")]
+		
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			public static const MOVIECLIP:String = "MOVIECLIP";
+			public static const BITMAP:String = "BITMAP";
+			
+			public var type:String;
+			
+			protected function showMovieClipSettings(event:MouseEvent):void
+			{
+				vs.selectedIndex = 0;
+				btnBitmap.selected = false;
+				type = MOVIECLIP;
+				dispatchEvent(new Event("change"));
+			}
+			
+			protected function showBitmapSettings(event:MouseEvent):void
+			{
+				vs.selectedIndex = 1;
+				btnMc.selected = false;
+				type = BITMAP;
+				dispatchEvent(new Event("change"));
+			}
+			
+			protected function capture(event:MouseEvent):void
+			{
+				dispatchEvent(new Event("capture"));
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="0xFFFFFF" />
+		</s:fill>
+		<s:stroke>
+			<s:SolidColorStroke color="0xCCCCCC"/>
+		</s:stroke>
+		<s:filters>
+			<s:DropShadowFilter inner="true" color="#999999" />
+		</s:filters>
+	</s:Rect>
+	
+	<s:VGroup left="10" top="10" right="10" horizontalAlign="center" gap="15">
+		<s:Group width="100%" height="100%">
+			<s:Rect width="100%" height="100%" radiusX="10" radiusY="10">
+				<s:fill>
+					<s:SolidColor color="#CCCCCC" />
+				</s:fill>
+			</s:Rect>
+			<s:HGroup width="100%" top="5" bottom="5" horizontalAlign="center" verticalAlign="middle" gap="0">
+				<s:ToggleButton id="btnMc" selected="true" label="MovieClip" cornerRadius="0" click="showMovieClipSettings(event)"/>
+				<s:ToggleButton id="btnBitmap" label="Bitmap" cornerRadius="0" click="showBitmapSettings(event)"/>
+			</s:HGroup>
+		</s:Group>
+		
+		<mx:HRule left="15" right="15"/>
+	</s:VGroup>
+	
+	<mx:ViewStack id="vs" selectedIndex="0" top="60" width="100%" height="100%" >
+		<s:NavigatorContent label="Movieclip Settings">
+			<s:VGroup width="100%" height="100%" verticalAlign="top" horizontalAlign="justify" 
+					  paddingLeft="10" paddingRight="5" paddingTop="10" paddingBottom="5">
+				<s:Label text="Settings:" />
+				
+			</s:VGroup>
+		</s:NavigatorContent>
+		
+		<s:NavigatorContent label="Bitmap Settings">
+			<s:VGroup width="100%" height="100%" verticalAlign="top" horizontalAlign="justify" 
+					  paddingLeft="10" paddingRight="5" paddingTop="10" paddingBottom="5">
+				<s:Label text="Settings:" />
+				<s:VGroup verticalAlign="top" horizontalAlign="justify" paddingLeft="15" paddingRight="5" paddingTop="5" paddingBottom="5">
+					<s:Label  text="Format:" />
+					<s:ComboBox/>
+					<s:Label text="Bitmap Size:"/>
+					<s:RadioButton label="128"/>
+					<s:RadioButton label="256"/>
+					<s:RadioButton label="512"/>
+					<s:RadioButton label="1024"/>
+					<s:RadioButton label="2048"/>
+					<s:RadioButton label="Custom"/>
+					
+				</s:VGroup>
+				<s:Button label="Capture" click="capture(event)" />
+			</s:VGroup>
+		</s:NavigatorContent>
+		
+	</mx:ViewStack>
+	
+	
+</s:Group>

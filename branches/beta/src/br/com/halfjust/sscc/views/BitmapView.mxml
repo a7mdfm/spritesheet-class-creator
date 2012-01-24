@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 minWidth="300" minHeight="200">
+	
+	<fx:Script>
+		<![CDATA[
+			import br.com.halfjust.sscc.model.vo.Asset;
+			import br.com.halfjust.sscc.model.vo.AssetSpritesheet;
+			
+			private var _asset:Asset;
+			
+			public var smooth:Boolean;
+			public var trim:Boolean;
+
+			private var position:Point;
+			private var row:Number;
+			
+			public function get asset():Asset{
+				return _asset;
+			}
+			
+			public function set asset(value:Asset):void{
+				_asset = value;
+			}
+			
+			public function capture():void{
+				if(asset){
+					if(ui.numChildren)
+						ui.removeChildAt(0);
+					
+					position = new Point(0,0);
+					row = 0;
+					
+					createSpritesheet();
+					
+					ui.addChild(asset.spritesheet.bitmap);
+					
+					startCapture();
+					
+					controls.enabled = true;
+				}
+			}
+			
+			/**
+			 * create bitmap sprites
+			 * */
+			private function startCapture():void{
+				var gui:MovieClip = asset.object as MovieClip;
+				if(gui){				
+					//gui.gotoAndStop(0);
+					//takeSnapshot(gui);
+					gui.addEventListener(Event.ENTER_FRAME, render, false, 0, true);
+					gui.gotoAndPlay(1);
+				} 
+				
+			}
+			
+			private function render(event:Event):void{
+				var gui:MovieClip = event.target as MovieClip;
+				
+				if(gui){
+					//snapshot current frame
+					takeSnapshot(gui);
+					
+					if(gui.currentFrame == gui.totalFrames){
+						gui.removeEventListener(Event.ENTER_FRAME, render);
+					}
+				}else{
+					gui.removeEventListener(Event.ENTER_FRAME, render);
+				}
+			}
+			
+			private function takeSnapshot(gui:MovieClip):void{
+				if(gui){				
+					var texture:BitmapData;
+					texture = new BitmapData(asset.area.width, asset.area.height, true, 0x00FFFFFF);
+					texture.draw(gui, null, null, null, null, smooth);
+					
+					//atualiza spritesheet
+					if(asset.spritesheet && asset.spritesheet.bitmap){
+						
+						if((position.x + asset.area.width) <= asset.spritesheet.bitmap.bitmapData.width){
+							row = (row > asset.area.height) ? row : asset.area.height;
+						}else{
+							position.y += row;
+							position.x = 0;
+						}
+						//copy sprite
+						asset.spritesheet.bitmap.bitmapData.copyPixels(texture, asset.area, position);
+						//update next position
+						position.x += asset.area.width;
+					}
+				}
+			}
+			
+			private function createSpritesheet():void{
+				if(asset){
+					var gui:MovieClip = asset.object as MovieClip;
+					if(gui){
+						gui.scaleX = gui.scaleY = 1;
+						gui.gotoAndStop(1);
+						
+						asset.area = getAssetArea(gui);
+						var ss:AssetSpritesheet = new AssetSpritesheet();
+							ss.columns = Math.floor(Math.sqrt(gui.totalFrames));
+							ss.rows = Math.ceil(gui.totalFrames/ss.columns);
+						//set size of spritesheet bitmap
+						var size:Rectangle = new Rectangle(0,0,
+							ss.columns*asset.area.width,
+							ss.rows*asset.area.height);
+						//canvas
+						var canvas:BitmapData = new BitmapData(size.width, size.height, false, 0x00ffffff);
+						//bitmap
+						if(ss.bitmap) ss.bitmap.bitmapData.dispose();
+						ss.bitmap = new Bitmap(canvas, "auto", smooth);
+						asset.spritesheet = ss;
+						//
+						updateScale(ss.bitmap);
+					}
+				}
+			}
+			
+			private function updateScale(canvas:Bitmap):void{
+				if(canvas){
+					if(canvas.width > canvas.height && canvas.width > this.width){
+						canvas.scaleX = canvas.scaleY = this.width/canvas.width;
+					}else if(canvas.height > canvas.width && canvas.height > this.height){
+						canvas.scaleX = canvas.scaleY = this.height/canvas.height;
+					}
+				}
+				scale.value = canvas.scaleX;
+			}
+			
+			private function getAssetArea(gui:MovieClip):Rectangle{
+				var area:Rectangle = new Rectangle(0,0,gui.width,gui.height);
+				var bounds:Rectangle;
+				for (var i:int = 1; i <= gui.totalFrames; i++) {
+					gui.gotoAndStop(i);
+					bounds = gui.getBounds(gui);
+					if(area.width < bounds.right) area.width = bounds.right;
+					if(area.height < bounds.bottom) area.height = bounds.bottom;
+				}
+				return area;
+			}
+			
+			protected function changeScale(event:Event):void{
+				if(asset && asset.spritesheet){
+					asset.spritesheet.bitmap.scaleX = asset.spritesheet.bitmap.scaleY = scale.value;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Rect id="bg" width="100%" height="100%">
+		<s:fill>
+			<s:BitmapFill source="@Embed('assets/images/tile.png')" fillMode="repeat" />
+		</s:fill>
+		<s:stroke>
+			<s:SolidColorStroke color="0xCCCCCC"/>
+		</s:stroke>
+		<s:filters>
+			<s:DropShadowFilter inner="true" color="#999999" />
+		</s:filters>
+	</s:Rect>
+	
+	<mx:UIComponent id="ui" left="5" right="5" top="5" bottom="5"/>
+	
+	<s:Group id="controls" height="50" bottom="5" left="5" right="5" enabled="false">
+		<s:Rect width="100%" height="100%" radiusX="10" radiusY="10">
+			<s:fill>
+				<s:SolidColor color="0xCCCCCC" alpha="0.8" />
+			</s:fill>
+		</s:Rect>
+		<s:HGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" 
+				  paddingLeft="5" paddingRight="5" paddingBottom="5" paddingTop="5">
+			<s:HSlider id="scale" width="100%" change="changeScale(event)" maximum="1"
+					   minimum="0" stepSize="0.01" verticalCenter="0" value="1"/>
+			<s:TextInput editable="false" width="40" text="{(scale.value*100).toString() + '%'}"/>
+		</s:HGroup>
+	</s:Group>
+	
+</s:Group>
