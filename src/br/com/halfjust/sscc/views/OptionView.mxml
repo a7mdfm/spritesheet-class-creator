@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx" contentBackgroundColor="0xCCCCCC">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:HGroup width="100%" height="100%" verticalAlign="bottom">
+		<s:HGroup horizontalAlign="left" verticalAlign="bottom">	
+			<s:Label fontFamily="Verdana" fontSize="18" fontWeight="bold" text="SSCC" bottom="0"/>
+			<s:BitmapImage source="@Embed('assets/images/icons/sscc24.png')" smooth="true" />
+			<s:Label color="#8E8E8E" fontWeight="bold" text="by halfjust"/>
+		</s:HGroup>
+		
+		
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor color="0xFFFFFF" />
+			</s:fill>
+			<s:stroke>
+				<s:SolidColorStroke color="0xCCCCCC"/>
+			</s:stroke>
+		</s:Rect>
+	</s:HGroup>
+	
+</s:Group>

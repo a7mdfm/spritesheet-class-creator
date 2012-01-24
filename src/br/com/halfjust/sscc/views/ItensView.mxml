@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx">
+	
+	<fx:Metadata>
+		[Event(name="change", type="spark.events.IndexChangeEvent")]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			import br.com.halfjust.sscc.model.vo.Asset;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.UIComponent;
+			import mx.managers.DragManager;
+			import mx.utils.ObjectUtil;
+			
+			import org.bytearray.explorer.SWFExplorer;
+			import org.bytearray.explorer.events.SWFExplorerEvent;
+			
+			import spark.events.IndexChangeEvent;
+
+			private var explorer:SWFExplorer = new SWFExplorer();
+			
+			[Bindable]
+			private var assets:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			public var currentAsset:Asset;
+			
+			protected function dragEnter(event:NativeDragEvent):void
+			{
+				var files:Array = event.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array
+				for each(var file:File in files) {
+					if(file.extension.toLowerCase() != "swf")
+						return;
+				}
+				DragManager.acceptDragDrop(UIComponent(event.target));
+			}
+			
+			protected function dragDrop(event:NativeDragEvent):void
+			{
+				var files:Array = event.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array
+				for each(var file:File in files) {
+					if(file.extension.toLowerCase() == "swf")
+						importSWF(file);
+				}
+			}
+			
+			private function importSWF(file:File):void{
+				explorer.addEventListener(SWFExplorerEvent.COMPLETE, loadDefinitions, false, 0, true);
+				explorer.load(new URLRequest(file.nativePath));
+			}
+			
+			protected function loadDefinitions(event:SWFExplorerEvent):void
+			{
+				var context:LoaderContext = new LoaderContext(false, ApplicationDomain.currentDomain);
+					context.allowCodeImport = true;
+				var loader:Loader = new Loader();
+					loader.contentLoaderInfo.addEventListener(Event.COMPLETE, loadComplete, false, 0, true);
+					loader.loadBytes(explorer.data, context);
+			}
+			
+			protected function loadComplete(event:Event):void
+			{
+				var loadInfo:LoaderInfo = event.target as LoaderInfo;
+					loadInfo.removeEventListener(Event.COMPLETE, loadComplete);
+				
+				var definition:Class;
+				for each (var def:String in explorer.getDefinitions()) {
+					definition = loadInfo.applicationDomain.getDefinition(def) as Class;
+					assets.addItem(new Asset(def, new definition() as DisplayObject));
+				}
+			}
+			
+			protected function selectChange(event:IndexChangeEvent):void
+			{
+				currentAsset = lst.selectedItem as Asset;
+				dispatchEvent(event);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="0xFFFFFF" />
+		</s:fill>
+		<s:stroke>
+			<s:SolidColorStroke color="0xCCCCCC"/>
+		</s:stroke>
+		<s:filters>
+			<s:DropShadowFilter inner="true" color="#999999" />
+		</s:filters>
+	</s:Rect>
+	
+	<s:List id="lst" dataProvider="{assets}" labelField="id" change="selectChange(event)" fontWeight="bold"
+			nativeDragEnter="dragEnter(event)" nativeDragDrop="dragDrop(event)" borderVisible="false" contentBackgroundAlpha="0"
+			left="5" right="5" bottom="5" top="5"/>
+	
+	<s:VGroup visible="{!assets.length}" horizontalAlign="center" verticalCenter="0" horizontalCenter="0" mouseChildren="false" mouseEnabled="false">
+		<s:Label text="Drag your flash movies here!" fontSize="13" />
+		<s:BitmapImage source="@Embed('assets/images/swf.png')" smooth="true" />
+	</s:VGroup>
+</s:Group>

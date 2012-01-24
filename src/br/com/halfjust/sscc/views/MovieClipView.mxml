@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 minWidth="300" minHeight="200" maskType="clip" resize="onResize(event)" deactivate="onDeactivate(event)"
+		 removedFromStage="onRemoved(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import br.com.halfjust.sscc.model.vo.Asset;
+			
+			import mx.events.ResizeEvent;
+			
+			private var _asset:Asset;
+			
+			private var gui:DisplayObject;
+			
+			public function get asset():Asset{
+				return _asset;
+			}
+
+			public function set asset(value:Asset):void{
+				//reset ui
+				if(ui.numChildren)
+					ui.removeChildAt(0)
+						
+				if(value){
+					gui = value.object;
+					//refresh scale
+					updateScale();
+					//add child
+					ui.addChildAt(gui, 0);
+					//update slider value
+					scale.value = gui.scaleX;
+					//enable controls
+					controls.enabled = true;
+					stopMovie();
+				}else{
+					//disable controls
+					controls.enabled = false;
+				}
+			}
+			
+			private function updateScale():void{
+				if(gui){
+					if(gui.width > gui.height && gui.width > this.width){
+						gui.scaleX = gui.scaleY = (this.width-50)/gui.width;
+					}else if(gui.height > gui.width && gui.height > this.height){
+						gui.scaleX = gui.scaleY = (this.height-50)/gui.height;
+					}
+				}
+			}
+			
+			private function getMovieClip():MovieClip{
+				if(gui){
+					var mc:MovieClip = gui as MovieClip;
+					if(mc) return mc;
+				}
+				return null;
+			}
+			
+			protected function changeScale(event:Event):void{
+				if(gui) gui.scaleX = gui.scaleY = scale.value;
+			}
+			
+			protected function stopMovie(event:MouseEvent = null):void{
+				var mc:MovieClip = getMovieClip();
+				if(mc) mc.stop();
+			}
+			
+			protected function previousFrame(event:MouseEvent = null):void{
+				var mc:MovieClip = getMovieClip();
+				if(mc) mc.prevFrame();
+			}
+			
+			protected function nextFrame(event:MouseEvent = null):void{
+				var mc:MovieClip = getMovieClip();
+				if(mc) mc.nextFrame();
+			}
+			
+			protected function playMovie(event:MouseEvent = null):void{
+				var mc:MovieClip = getMovieClip();
+				if(mc) mc.play();
+			}
+			
+			protected function onResize(event:ResizeEvent):void{
+				
+			}
+			
+			protected function onDeactivate(event:Event):void{
+				stopMovie();
+			}
+			
+			protected function onRemoved(event:Event):void{
+				stopMovie();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Rect id="bg" width="100%" height="100%">
+		<s:fill>
+			<s:BitmapFill source="@Embed('assets/images/tile.png')" fillMode="repeat" />
+		</s:fill>
+		<s:stroke>
+			<s:SolidColorStroke color="0xCCCCCC"/>
+		</s:stroke>
+		<s:filters>
+			<s:DropShadowFilter inner="true" color="#999999" />
+		</s:filters>
+	</s:Rect>
+	
+	<mx:UIComponent id="ui" left="5" right="5" top="5" bottom="5"/>
+	
+	<s:Group id="controls" height="50" bottom="5" left="5" right="5" enabled="false">
+		<s:Rect width="100%" height="100%" radiusX="10" radiusY="10">
+			<s:fill>
+				<s:SolidColor color="0xCCCCCC" alpha="0.8" />
+			</s:fill>
+		</s:Rect>
+		<s:HGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" 
+				  paddingLeft="5" paddingRight="5" paddingBottom="5" paddingTop="5">
+			<s:Button width="27" icon="@Embed('assets/images/play.png')" click="playMovie(event)" />
+			<s:Button width="27" icon="@Embed('assets/images/stop.png')" click="stopMovie(event)" />
+			<s:Button width="27" icon="@Embed('assets/images/prev.png')" click="previousFrame(event)"/>
+			<s:Button width="27" icon="@Embed('assets/images/next.png')" click="nextFrame(event)"/>
+			<s:HSlider id="scale" width="100%" change="changeScale(event)" maximum="1"
+					   minimum="0" stepSize="0.01" verticalCenter="0" value="1"/>
+			<s:TextInput editable="false" width="40" text="{(scale.value*100).toString() + '%'}"/>
+						
+		</s:HGroup>
+	</s:Group>
+	
+	
+</s:Group>
